@@ -8,6 +8,8 @@ Example output:
 
 The flag tooltip uses the country name reported by X, for example `Argentina`.
 
+Regional labels use `🇪🇺` for Europe and `🌎` for North America or South America; Unicode has no separate flags for those two Americas.
+
 ## How it works
 
 - Watches `article[data-testid="tweet"]` nodes in the timeline.
@@ -33,6 +35,12 @@ The script needs one real `AboutAccountQuery` from your current X session so it 
 3. Return to the timeline.
 
 After that, timeline posts should begin resolving flags automatically as they are processed.
+
+## Automatic-bootstrap trial
+
+`x-country-flags-autoprime.user.js` is a separate experimental version that does not require opening `About this account` first. It captures the authenticated GraphQL headers from normal timeline traffic, then invokes the current `AboutAccountQuery` ID directly.
+
+Install it instead of the standard script while testing. Disable the standard script first so flags are not rendered twice.
 
 ## Limitations
 
