@@ -10,6 +10,10 @@ The flag tooltip uses the country name reported by X, for example `Argentina`.
 
 Regional labels use `🇪🇺` for Europe and `🌎` for North America or South America; Unicode has no separate flags for those two Americas.
 
+## Icon
+
+Both userscripts embed a compact PNG icon rendered from `World-Flags-Globe.svg`, so Violentmonkey can display it without a remote URL.
+
 ## How it works
 
 - Watches `article[data-testid="tweet"]` nodes in the timeline.
