@@ -46,6 +46,8 @@ After that, timeline posts should begin resolving flags automatically as they ar
 
 Install it instead of the standard script while testing. Disable the standard script first so flags are not rendered twice.
 
+`x-country-flags-autoprime-chromium.user.js` is the separate Chromium/Brave variant. Use it instead of the Firefox autoprime script in Chromium-based browsers.
+
 ## Limitations
 
 - If X changes the internal query name, path, or payload shape, the script will stop adding flags until updated.

@@ -231,7 +231,6 @@
 
   function installGraphqlCapture() {
     const originalFetch = window.fetch;
-    const pageFetch = originalFetch.bind(window);
     window.fetch = function patchedFetch(input, init) {
       const request = input instanceof Request ? input : null;
       captureTemplate(
@@ -284,7 +283,7 @@
       requestTemplate = {
         url: url.toString(),
         headers,
-        fetch: pageFetch,
+        fetch: originalFetch,
       };
       console.info("[X Country Flags] Captured timeline GraphQL request.");
       processTweets(document);
