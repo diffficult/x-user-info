@@ -17,12 +17,18 @@
   const ABOUT_ACCOUNT_QUERY_ID = "TzOG2twZEfhr9KmClvVVqA";
   const CACHE_KEY = "x-country-flags-autoprime-cache-v1";
   const CACHE_TTL_MS = 14 * 24 * 60 * 60 * 1000;
+  const REQUEST_INTERVAL_MS = 15 * 1000;
+  const FAILURE_COOLDOWN_MS = 30 * 60 * 1000;
   const MARKER_ATTR = "data-x-country-flags-autoprime-marker";
   const GRAPHQL_PATH = /\/i\/api\/graphql\/[^/]+\/[^/]+/;
   const cache = new Map(Object.entries(readStoredCache()));
   const inflight = new Map();
+  const requestQueue = [];
   const pendingArticles = new Set();
   let requestTemplate = null;
+  let requestTimer = null;
+  let nextRequestAt = 0;
+  let cooldownUntil = 0;
 
   installGraphqlCapture();
 
@@ -143,15 +149,40 @@
       return null;
     }
 
-    const promise = requestCountry(screenName);
+    const promise = new Promise((resolve) => {
+      requestQueue.push({ screenName, resolve });
+      scheduleQueuedRequest();
+    });
     inflight.set(screenName, promise);
     try {
       const entry = await promise;
-      storeCacheEntry(screenName, entry);
+      if (entry) {
+        storeCacheEntry(screenName, entry);
+      }
       return entry;
     } finally {
       inflight.delete(screenName);
     }
+  }
+
+  function scheduleQueuedRequest() {
+    if (requestTimer || requestQueue.length === 0) {
+      return;
+    }
+
+    const delay = Math.max(0, nextRequestAt - Date.now(), cooldownUntil - Date.now());
+    requestTimer = setTimeout(async () => {
+      requestTimer = null;
+      const job = requestQueue.shift();
+      if (!job) {
+        return;
+      }
+
+      const entry = await requestCountry(job.screenName);
+      nextRequestAt = Date.now() + REQUEST_INTERVAL_MS;
+      job.resolve(entry);
+      scheduleQueuedRequest();
+    }, delay);
   }
 
   async function requestCountry(screenName) {
@@ -166,8 +197,8 @@
         headers: requestTemplate.headers,
       });
       if (!response.ok) {
-        console.warn("[X Country Flags] AboutAccountQuery failed:", response.status);
-        return emptyEntry();
+        pauseRequests(response.status);
+        return null;
       }
 
       const payload = await response.json();
@@ -178,13 +209,14 @@
         : null;
       return { countryName, countryCode };
     } catch (error) {
-      console.warn("[X Country Flags] AboutAccountQuery failed:", error);
-      return emptyEntry();
+      pauseRequests(error);
+      return null;
     }
   }
 
-  function emptyEntry() {
-    return { countryName: null, countryCode: null };
+  function pauseRequests(reason) {
+    cooldownUntil = Date.now() + FAILURE_COOLDOWN_MS;
+    console.warn("[X Country Flags] Country lookups paused for 30 minutes:", reason);
   }
 
   function renderPendingArticles(screenName, countryCode, countryName) {
