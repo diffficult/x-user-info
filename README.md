@@ -50,5 +50,5 @@ Install it instead of the standard script while testing. Disable the standard sc
 
 - If X changes the internal query name, path, or payload shape, the script will stop adding flags until updated.
 - If X does not mark the country as accurate, the script intentionally shows nothing.
-- The automatic-bootstrap script ignores the initial timeline, looks up only newly added posters, makes at most one lookup every 3 seconds, and pauses for 30 minutes after a failed request to protect the X session from rate limits.
+- The automatic-bootstrap script looks up each uncached poster at most once, makes at most one lookup every 3 seconds, and pauses for 30 minutes after a failed request to protect the X session from rate limits.
 - The script currently targets `x.com` desktop DOM, not mobile web or third-party clients.

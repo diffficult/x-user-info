@@ -17,7 +17,6 @@
   const ABOUT_ACCOUNT_QUERY_ID = "TzOG2twZEfhr9KmClvVVqA";
   const CACHE_KEY = "x-country-flags-autoprime-cache-v1";
   const CACHE_TTL_MS = 14 * 24 * 60 * 60 * 1000;
-  const INITIAL_TIMELINE_SETTLE_MS = 5 * 1000;
   const REQUEST_INTERVAL_MS = 3 * 1000;
   const FAILURE_COOLDOWN_MS = 30 * 60 * 1000;
   const MARKER_ATTR = "data-x-country-flags-autoprime-marker";
@@ -30,7 +29,6 @@
   let requestTimer = null;
   let nextRequestAt = 0;
   let cooldownUntil = 0;
-  let lookupsEnabled = false;
 
   installGraphqlCapture();
 
@@ -42,10 +40,7 @@
 
   function start() {
     observeTimeline();
-    processTweets(document, false);
-    setTimeout(() => {
-      lookupsEnabled = true;
-    }, INITIAL_TIMELINE_SETTLE_MS);
+    processTweets(document);
   }
 
   function readStoredCache() {
@@ -73,9 +68,9 @@
           }
 
           if (node.matches?.('article[data-testid="tweet"]')) {
-            processTweet(node, lookupsEnabled);
+            processTweet(node);
           }
-          processTweets(node, lookupsEnabled);
+          processTweets(node);
         }
       }
     });
@@ -83,13 +78,13 @@
     observer.observe(document.body, { childList: true, subtree: true });
   }
 
-  function processTweets(root, allowLookup = true) {
+  function processTweets(root) {
     for (const article of root.querySelectorAll?.('article[data-testid="tweet"]') ?? []) {
-      processTweet(article, allowLookup);
+      processTweet(article);
     }
   }
 
-  function processTweet(article, allowLookup = true) {
+  function processTweet(article) {
     const timestampAnchor = article.querySelector('a[href*="/status/"] > time')?.closest("a");
     const screenName = getScreenName(timestampAnchor);
     if (!timestampAnchor || !screenName) {
@@ -102,10 +97,6 @@
       if (cached.countryCode) {
         insertFlag(timestampAnchor, cached.countryCode, cached.countryName);
       }
-      return;
-    }
-
-    if (!allowLookup) {
       return;
     }
 
@@ -327,7 +318,7 @@
         fetch: originalFetch,
       };
       console.info("[X Country Flags] Captured timeline GraphQL request.");
-      processTweets(document, lookupsEnabled);
+      processTweets(document);
     }
   }
 
