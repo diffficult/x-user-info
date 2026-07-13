@@ -16,7 +16,6 @@
 
   const ABOUT_ACCOUNT_QUERY_ID = "TzOG2twZEfhr9KmClvVVqA";
   const CACHE_KEY = "x-country-flags-autoprime-cache-v1";
-  const CACHE_TTL_MS = 14 * 24 * 60 * 60 * 1000;
   const REQUEST_INTERVAL_MS = 3 * 1000;
   const FAILURE_COOLDOWN_MS = 30 * 60 * 1000;
   const MARKER_ATTR = "data-x-country-flags-autoprime-marker";
@@ -120,20 +119,11 @@
   }
 
   function readCacheEntry(screenName) {
-    const entry = cache.get(screenName);
-    if (!entry) {
-      return null;
-    }
-    if (Date.now() - entry.checkedAt > CACHE_TTL_MS) {
-      cache.delete(screenName);
-      writeStoredCache();
-      return null;
-    }
-    return entry;
+    return cache.get(screenName) ?? null;
   }
 
   function storeCacheEntry(screenName, entry) {
-    cache.set(screenName, { ...entry, checkedAt: Date.now() });
+    cache.set(screenName, entry);
     writeStoredCache();
   }
 

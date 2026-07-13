@@ -21,7 +21,7 @@ Both userscripts embed a compact PNG icon rendered from `World-Flags-Globe.svg`,
 - Captures X's internal `AboutAccountQuery` request template from the profile's `About this account` panel.
 - Reuses that request for other handles and reads `about_profile.account_based_in`.
 - Only renders a flag when `created_country_accurate` is `true`.
-- Caches results per handle for 14 days.
+- Caches each handle's result permanently in Violentmonkey storage, so it is queried at most once unless the script cache is cleared.
 
 ## Install
 
