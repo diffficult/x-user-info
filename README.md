@@ -46,6 +46,13 @@ After that, timeline posts should begin resolving flags automatically as they ar
 
 Install it instead of the standard script while testing. Disable the standard script first so flags are not rendered twice.
 
+## Privacy And Session Disclaimer
+
+- No X username, account ID, cookie, token, or session value is hardcoded in either script.
+- The automatic-bootstrap script uses the active X session to query X's own endpoint. It captures X's normal GraphQL request metadata, including authorization headers, only in page memory; the browser attaches session cookies through `credentials: "include"`.
+- Cookie headers are excluded from the captured request template. Headers, cookies, and tokens are not logged or written to Violentmonkey storage.
+- Persistent storage contains only `username -> country name / flag` cache entries.
+
 ## Limitations
 
 - If X changes the internal query name, path, or payload shape, the script will stop adding flags until updated.
