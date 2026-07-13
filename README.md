@@ -12,7 +12,7 @@ Regional labels use `🇪🇺` for Europe and `🌎` for North America or South 
 
 ## Icon
 
-Both userscripts embed a compact PNG icon rendered from `World-Flags-Globe.svg`, so Violentmonkey can display it without a remote URL.
+Both userscripts embed a compact PNG icon directly in their metadata, so no external icon file or remote URL is required.
 
 ## How it works
 
