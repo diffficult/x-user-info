@@ -1,8 +1,10 @@
 // ==UserScript==
 // @name         X Country Flags (Automatic Bootstrap)
 // @namespace    https://x.com/
-// @version      0.1.0
+// @version      0.2.0
 // @description  Trial version that fetches X account-country flags without opening a profile.
+// @updateURL     https://forge.ikelos.xyz/5320/x-user-info/raw/branch/main/x-country-flags-autoprime.user.js
+// @downloadURL   https://forge.ikelos.xyz/5320/x-user-info/raw/branch/main/x-country-flags-autoprime.user.js
 // @icon         data:image/png;base64,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
 // @match        https://x.com/*
 // @grant        GM_getValue
@@ -18,6 +20,8 @@
   const CACHE_KEY = "x-country-flags-autoprime-cache-v1";
   const REQUEST_INTERVAL_MS = 3 * 1000;
   const FAILURE_COOLDOWN_MS = 30 * 60 * 1000;
+  const TRANSIENT_BACKOFF_MS = 60 * 1000;
+  const WRITE_DEBOUNCE_MS = 1000;
   const MARKER_ATTR = "data-x-country-flags-autoprime-marker";
   const GRAPHQL_PATH = /\/i\/api\/graphql\/[^/]+\/[^/]+/;
   const cache = new Map(Object.entries(readStoredCache()));
@@ -26,6 +30,7 @@
   const pendingArticles = new Set();
   let requestTemplate = null;
   let requestTimer = null;
+  let writeTimer = null;
   let nextRequestAt = 0;
   let cooldownUntil = 0;
 
@@ -40,6 +45,11 @@
   function start() {
     observeTimeline();
     processTweets(document);
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "hidden") {
+        flushStoredCache();
+      }
+    });
   }
 
   function readStoredCache() {
@@ -51,6 +61,25 @@
   }
 
   function writeStoredCache() {
+    if (writeTimer) {
+      return;
+    }
+    writeTimer = setTimeout(() => {
+      writeTimer = null;
+      try {
+        GM_setValue(CACHE_KEY, Object.fromEntries(cache));
+      } catch {
+        // The in-memory cache still avoids duplicate requests in this tab.
+      }
+    }, WRITE_DEBOUNCE_MS);
+  }
+
+  function flushStoredCache() {
+    if (!writeTimer) {
+      return;
+    }
+    clearTimeout(writeTimer);
+    writeTimer = null;
     try {
       GM_setValue(CACHE_KEY, Object.fromEntries(cache));
     } catch {
@@ -171,47 +200,87 @@
       const entry = await requestCountry(job.screenName);
       nextRequestAt = Date.now() + REQUEST_INTERVAL_MS;
       job.resolve(entry);
+      prunePendingArticles();
       scheduleQueuedRequest();
     }, delay);
   }
 
   async function requestCountry(screenName) {
+    let response;
     try {
       const url = new URL(requestTemplate.url);
       url.pathname = `/i/api/graphql/${ABOUT_ACCOUNT_QUERY_ID}/AboutAccountQuery`;
+      url.search = "";
       url.searchParams.set("variables", JSON.stringify({ screenName }));
 
-      const response = await requestTemplate.fetch(url.toString(), {
+      response = await requestTemplate.fetch(url.toString(), {
         method: "GET",
         credentials: "include",
         headers: requestTemplate.headers,
       });
-      if (!response.ok) {
-        pauseRequests(response.status);
-        return null;
-      }
-
-      const payload = await response.json();
-      const aboutProfile = payload?.data?.user_result_by_screen_name?.result?.about_profile;
-      const countryName = aboutProfile?.account_based_in ?? null;
-      const countryCode = aboutProfile?.created_country_accurate
-        ? countryNameToCode(countryName)
-        : null;
-      return { countryName, countryCode };
     } catch (error) {
-      pauseRequests(error);
+      pauseRequests(TRANSIENT_BACKOFF_MS, `network error for @${screenName}: ${error}`);
       return null;
     }
+
+    if (!response.ok) {
+      pauseRequests(
+        backoffForStatus(response.status),
+        `request failed (HTTP ${response.status}) for @${screenName}`,
+      );
+      return null;
+    }
+
+    let payload;
+    try {
+      payload = await response.json();
+    } catch (error) {
+      pauseRequests(TRANSIENT_BACKOFF_MS, `invalid JSON response for @${screenName}: ${error}`);
+      return null;
+    }
+
+    if (!payload?.data) {
+      const message = payload?.errors?.[0]?.message ?? "unknown GraphQL error";
+      const staleQuery = /not found|no operation named/i.test(message);
+      pauseRequests(
+        staleQuery ? FAILURE_COOLDOWN_MS : TRANSIENT_BACKOFF_MS,
+        staleQuery
+          ? `stale AboutAccountQuery ID (${ABOUT_ACCOUNT_QUERY_ID}): ${message}`
+          : `GraphQL error for @${screenName}: ${message}`,
+      );
+      return null;
+    }
+
+    const aboutProfile = payload.data.user_result_by_screen_name?.result?.about_profile;
+    const countryName = aboutProfile?.account_based_in ?? null;
+    const countryCode = aboutProfile?.created_country_accurate
+      ? countryNameToCode(countryName)
+      : null;
+    return { countryName, countryCode };
   }
 
-  function pauseRequests(reason) {
-    cooldownUntil = Date.now() + FAILURE_COOLDOWN_MS;
-    console.warn("[X Country Flags] Country lookups paused for 30 minutes:", reason);
+  function backoffForStatus(status) {
+    if (status === 429 || status === 401 || status === 403 || status === 404) {
+      return FAILURE_COOLDOWN_MS;
+    }
+    return TRANSIENT_BACKOFF_MS;
+  }
+
+  function pauseRequests(delay, reason) {
+    cooldownUntil = Date.now() + delay;
+    console.warn(
+      `[X Country Flags] Country lookups paused for ${Math.round(delay / 60000)} min:`,
+      reason,
+    );
   }
 
   function renderPendingArticles(screenName, countryCode, countryName) {
     for (const article of [...pendingArticles]) {
       if (article.dataset.xCountryFlagsAutoprimeHandle !== screenName) {
+        continue;
+      }
+      if (!article.isConnected) {
+        pendingArticles.delete(article);
         continue;
       }
       const anchor = article.querySelector('a[href*="/status/"] > time')?.closest("a");
@@ -225,6 +294,14 @@
   function clearPendingArticles(screenName) {
     for (const article of [...pendingArticles]) {
       if (article.dataset.xCountryFlagsAutoprimeHandle === screenName) {
+        pendingArticles.delete(article);
+      }
+    }
+  }
+
+  function prunePendingArticles() {
+    for (const article of [...pendingArticles]) {
+      if (!article.isConnected) {
         pendingArticles.delete(article);
       }
     }
