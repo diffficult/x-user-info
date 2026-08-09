@@ -1,6 +1,6 @@
 # X Country Flags
 
-Violentmonkey userscript for `x.com` that appends an account-country flag after the post age in timeline tweets.
+Userscript for `x.com` that appends an account-country flag after the post age in timeline tweets. Works in Firefox with Violentmonkey and in Chromium-based browsers with Tampermonkey.
 
 Example output:
 
@@ -18,20 +18,22 @@ The userscript embeds a compact PNG icon directly in its metadata, so no externa
 
 - Watches `article[data-testid="tweet"]` nodes in the timeline.
 - Reads the account handle from the post's status link.
-- Captures X's internal GraphQL request template — including its authorization headers — from normal timeline traffic, so no profile visit or manual priming is needed.
+- Captures X's internal GraphQL request template — including its authorization headers — from normal timeline traffic, so no profile visit or manual priming is needed. It patches the page's own `fetch`/`XMLHttpRequest`; `@inject-into auto` runs it in the page context when the site's CSP allows it (Chromium, Tampermonkey) and falls back to the content context on Firefox, where it reaches the page world through `wrappedJSObject`.
 - Reuses that template to invoke the current `AboutAccountQuery` operation and reads `about_profile.account_based_in`.
 - Only renders a flag when `created_country_accurate` is `true`.
-- Caches each handle's result permanently in Violentmonkey storage, so it is queried at most once unless the script cache is cleared.
+- Caches each handle's result permanently in userscript storage, so it is queried at most once unless the script cache is cleared.
 
 ## Install
 
 **[Install / Update](https://forge.ikelos.xyz/5320/x-user-info/raw/branch/main/x-country-flags-autoprime.user.js)**
 
-1. Install Violentmonkey in Firefox.
-2. Click the link above — Violentmonkey offers to install it, or update it if you already have a previous version installed.
+1. Install Violentmonkey in Firefox or Tampermonkey in Chromium-based browsers.
+2. Click the link above — the manager offers to install it, or update it if you already have a previous version installed.
 3. Open `https://x.com/home`.
 
 Flags begin resolving as soon as the script captures the first authenticated timeline request.
+
+If flags do not appear, open the developer console on `x.com`: the script logs its effective context (`injectInto=...`). In Firefox it should report `content`; if you instead see the warning `Page-context fetch interception is unavailable`, the script could not reach the page's network layer in that browser.
 
 ## Privacy And Session Disclaimer
 

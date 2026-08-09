@@ -1,15 +1,16 @@
 // ==UserScript==
 // @name         X Country Flags (Automatic Bootstrap)
 // @namespace    https://x.com/
-// @version      0.2.0
-// @description  Trial version that fetches X account-country flags without opening a profile.
+// @version      0.3.0
+// @description  Fetches X account-country flags in Firefox (Violentmonkey) and Chromium (Tampermonkey) without opening a profile.
 // @updateURL     https://forge.ikelos.xyz/5320/x-user-info/raw/branch/main/x-country-flags-autoprime.user.js
 // @downloadURL   https://forge.ikelos.xyz/5320/x-user-info/raw/branch/main/x-country-flags-autoprime.user.js
 // @icon         data:image/png;base64,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
 // @match        https://x.com/*
 // @grant        GM_getValue
 // @grant        GM_setValue
-// @inject-into  page
+// @grant        GM_info
+// @inject-into  auto
 // @run-at       document-start
 // ==/UserScript==
 
@@ -35,6 +36,7 @@
   let cooldownUntil = 0;
 
   installGraphqlCapture();
+  logContext();
 
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", start, { once: true });
@@ -329,40 +331,57 @@
   }
 
   function installGraphqlCapture() {
-    const originalFetch = window.fetch;
-    window.fetch = function patchedFetch(input, init) {
-      const request = input instanceof Request ? input : null;
-      captureTemplate(
-        request ? request.url : String(input),
-        init?.headers || request?.headers || {},
-      );
-      return originalFetch.apply(this, arguments);
-    };
+    const pageWindow = getPageWindow();
+    const inPageWorld = pageWindow === window;
 
-    const originalOpen = XMLHttpRequest.prototype.open;
-    const originalSend = XMLHttpRequest.prototype.send;
-    const originalSetRequestHeader = XMLHttpRequest.prototype.setRequestHeader;
+    // In Firefox content context the patched hooks must be exported into the page world
+    // (exportFunction); everywhere else a plain assignment is enough.
+    const wrapForPage = inPageWorld || typeof exportFunction !== "function"
+      ? (fn) => fn
+      : (fn) => exportFunction(fn, pageWindow);
 
-    XMLHttpRequest.prototype.open = function patchedOpen(method, url) {
-      this.__xCountryFlagsAutoprimeUrl = url;
-      this.__xCountryFlagsAutoprimeHeaders = {};
-      return originalOpen.apply(this, arguments);
-    };
+    const originalFetch = pageWindow.fetch;
+    if (typeof originalFetch === "function") {
+      pageWindow.fetch = wrapForPage(function patchedFetch(input, init) {
+        const request = input && typeof input === "object" && input.url ? input : null;
+        captureTemplate(
+          request ? request.url : String(input),
+          init?.headers || request?.headers || {},
+        );
+        return originalFetch.apply(this, arguments);
+      });
+    }
 
-    XMLHttpRequest.prototype.setRequestHeader = function patchedSetRequestHeader(key, value) {
-      if (this.__xCountryFlagsAutoprimeHeaders) {
-        this.__xCountryFlagsAutoprimeHeaders[key] = value;
-      }
-      return originalSetRequestHeader.apply(this, arguments);
-    };
+    const proto = pageWindow.XMLHttpRequest?.prototype;
+    if (proto && typeof proto.open === "function") {
+      const originalOpen = proto.open;
+      const originalSend = proto.send;
+      const originalSetRequestHeader = proto.setRequestHeader;
 
-    XMLHttpRequest.prototype.send = function patchedSend() {
-      captureTemplate(this.__xCountryFlagsAutoprimeUrl, this.__xCountryFlagsAutoprimeHeaders);
-      return originalSend.apply(this, arguments);
-    };
+      proto.open = wrapForPage(function patchedOpen(method, url) {
+        this.__xCountryFlagsAutoprimeUrl = url;
+        this.__xCountryFlagsAutoprimeHeaders = {};
+        return originalOpen.apply(this, arguments);
+      });
+
+      proto.setRequestHeader = wrapForPage(function patchedSetRequestHeader(key, value) {
+        if (this.__xCountryFlagsAutoprimeHeaders) {
+          this.__xCountryFlagsAutoprimeHeaders[key] = value;
+        }
+        return originalSetRequestHeader.apply(this, arguments);
+      });
+
+      proto.send = wrapForPage(function patchedSend() {
+        captureTemplate(this.__xCountryFlagsAutoprimeUrl, this.__xCountryFlagsAutoprimeHeaders);
+        return originalSend.apply(this, arguments);
+      });
+    }
 
     function captureTemplate(rawUrl, headersLike) {
       if (requestTemplate) {
+        return;
+      }
+      if (!rawUrl) {
         return;
       }
 
@@ -371,21 +390,75 @@
         return;
       }
 
-      const headers = new Headers(headersLike || {});
-      if (!headers.has("authorization")) {
+      const headers = extractHeaderMap(headersLike);
+      if (!headers.authorization) {
         return;
       }
 
-      headers.delete("content-length");
-      headers.delete("cookie");
-      headers.delete("host");
+      delete headers["content-length"];
+      delete headers["cookie"];
+      delete headers["host"];
       requestTemplate = {
         url: url.toString(),
         headers,
-        fetch: originalFetch,
+        fetch: function (...args) {
+          return originalFetch.apply(pageWindow, args);
+        },
       };
-      console.info("[X Country Flags] Captured timeline GraphQL request.");
+      console.info(
+        `[X Country Flags] Captured timeline GraphQL request. injectInto=${getInjectContext()}`,
+      );
       processTweets(document);
+    }
+
+    // Flatten headers to a plain lowercase-key map; works with page-world Headers
+    // (Xray-wrapped), content-world Headers, and plain objects.
+    function extractHeaderMap(headersLike) {
+      const out = {};
+      try {
+        if (!headersLike) {
+          return out;
+        }
+        if (typeof headersLike.forEach === "function") {
+          headersLike.forEach((value, key) => {
+            out[String(key).toLowerCase()] = String(value);
+          });
+          return out;
+        }
+        const headers = headersLike instanceof Headers ? headersLike : new Headers(headersLike);
+        headers.forEach((value, key) => {
+          out[key] = value;
+        });
+        return out;
+      } catch {
+        return out;
+      }
+    }
+  }
+
+  function getPageWindow() {
+    // Firefox content context exposes the page world through wrappedJSObject.
+    // In page-context injection (Violentmonkey auto/page, Tampermonkey) window is already the page.
+    return window.wrappedJSObject || window;
+  }
+
+  function getInjectContext() {
+    if (typeof GM_info === "object" && GM_info?.injectInto) {
+      return GM_info.injectInto;
+    }
+    return "n/a";
+  }
+
+  function logContext() {
+    const canPatchPage =
+      window.wrappedJSObject != null || typeof exportFunction === "function";
+    console.info(
+      `[X Country Flags] injectInto=${getInjectContext()} pageWorld=${window.wrappedJSObject == null} wrappedJSObject=${window.wrappedJSObject != null} exportFunction=${typeof exportFunction === "function"}`,
+    );
+    if (!canPatchPage) {
+      console.warn(
+        "[X Country Flags] Page-context fetch interception is unavailable here; flags will not resolve.",
+      );
     }
   }
 
