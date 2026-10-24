@@ -26,7 +26,7 @@ The userscript embeds a compact PNG icon directly in its metadata, so no externa
 
 ## Install
 
-**[Install / Update](https://forge.ikelos.xyz/5320/x-user-info/raw/branch/main/x-country-flags-autoprime.user.js)**
+**[Install / Update](https://raw.githubusercontent.com/diffficult/x-user-info/main/x-country-flags-autoprime.user.js)**
 
 1. Install Violentmonkey in Firefox or Tampermonkey in Chromium-based browsers.
 2. Click the link above — the manager offers to install it, or update it if you already have a previous version installed.
