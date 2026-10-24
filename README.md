@@ -16,7 +16,7 @@ The userscript embeds a compact PNG icon directly in its metadata, so no externa
 
 ## How it works
 
-- Watches every post-age link (`a[href*="/status/"] time`) under timeline tweets, including quoted posts. A quote whose time links to `/i/status/:id` takes the handle from the adjacent display name.
+- Watches every post-age link (`a[href*="/status/"] time`) under timeline tweets, including quoted posts. Rechecks links when X changes a reused timeline anchor's `href`, so a country flag cannot remain attached to a different account. A quote whose time links to `/i/status/:id` takes the handle from the adjacent display name.
 - Captures X's internal GraphQL request template — including its authorization headers — from normal timeline traffic, so no profile visit or manual priming is needed. It patches the page's own `fetch`/`XMLHttpRequest` without blocking those calls. `@inject-into auto` runs it in the page context when the site's CSP allows it (Chromium, Tampermonkey) and falls back to the content context on Firefox, where it reaches the page world through `wrappedJSObject`.
 - Reuses that template to invoke `AboutAccountQuery` and reads `about_profile.account_based_in`. If X itself loads About this account, the script reuses that response and adopts the live query ID and feature flags.
 - Renders a flag only when `created_country_accurate` is `true`. The marker inherits the timestamp color, does not shrink in the quote header, and its tooltip says `Account based in Argentina`.

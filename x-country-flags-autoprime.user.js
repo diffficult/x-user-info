@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         X Country Flags (Automatic Bootstrap)
 // @namespace    https://x.com/
-// @version      0.4.2
+// @version      0.4.3
 // @description  Fetches X account-country flags for posts and quotes in Firefox (Violentmonkey) and Chromium (Tampermonkey).
 // @updateURL     https://raw.githubusercontent.com/diffficult/x-user-info/main/x-country-flags-autoprime.user.js
 // @downloadURL   https://raw.githubusercontent.com/diffficult/x-user-info/main/x-country-flags-autoprime.user.js
@@ -105,7 +105,15 @@
   function observeTimeline() {
     const observer = new MutationObserver((mutations) => {
       for (const mutation of mutations) {
-        if (mutation.type !== "childList") {
+        if (mutation.type === "attributes") {
+          const anchor = mutation.target;
+          if (
+            anchor instanceof HTMLAnchorElement &&
+            anchor.matches('a[href*="/status/"]') &&
+            anchor.querySelector("time")
+          ) {
+            scheduleScan(anchor);
+          }
           continue;
         }
         if (mutation.removedNodes.length && mutation.target instanceof Element) {
@@ -126,7 +134,12 @@
         }
       }
     });
-    observer.observe(document.documentElement, { childList: true, subtree: true });
+    observer.observe(document.documentElement, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ["href"],
+    });
   }
 
   function scheduleScan(root) {
@@ -168,12 +181,12 @@
   function processAnchor(anchor) {
     const handle = readHandle(anchor);
     if (!handle) {
+      untrackAnchor(anchor);
       return;
     }
 
-    anchor.dataset.xCountryFlagsHandle = handle.key;
-    anchor.dataset.xCountryFlagsScreenName = handle.screenName;
     trackAnchor(anchor, handle.key);
+    anchor.dataset.xCountryFlagsScreenName = handle.screenName;
     const cached = usableCache(handle.key);
     const marker = markerFor(anchor);
     if (cached && marker?.getAttribute(MARKER_ATTR) === cached.status) {
@@ -192,17 +205,54 @@
       }
       return;
     }
-    if (anchor.dataset.xCountryFlagsPending === "1") {
+    if (anchor.dataset.xCountryFlagsPending === handle.key) {
       return;
     }
 
-    anchor.dataset.xCountryFlagsPending = "1";
+    anchor.dataset.xCountryFlagsPending = handle.key;
     void fetchCountry(handle.key, handle.screenName).then((entry) => {
-      delete anchor.dataset.xCountryFlagsPending;
+      if (anchor.dataset.xCountryFlagsPending === handle.key) {
+        delete anchor.dataset.xCountryFlagsPending;
+      }
       if (entry) {
         renderHandle(handle.key, entry);
       }
     });
+  }
+
+  function untrackAnchor(anchor) {
+    const key = anchor.dataset.xCountryFlagsHandle;
+    if (key) {
+      const anchors = anchorsByHandle.get(key);
+      anchors?.delete(anchor);
+      if (anchors?.size === 0) {
+        anchorsByHandle.delete(key);
+      }
+      markerFor(anchor)?.remove();
+    }
+    delete anchor.dataset.xCountryFlagsHandle;
+    delete anchor.dataset.xCountryFlagsScreenName;
+    delete anchor.dataset.xCountryFlagsPending;
+  }
+
+  function trackAnchor(anchor, key) {
+    const previousKey = anchor.dataset.xCountryFlagsHandle;
+    if (previousKey && previousKey !== key) {
+      const previousAnchors = anchorsByHandle.get(previousKey);
+      previousAnchors?.delete(anchor);
+      if (previousAnchors?.size === 0) {
+        anchorsByHandle.delete(previousKey);
+      }
+      markerFor(anchor)?.remove();
+      delete anchor.dataset.xCountryFlagsPending;
+    }
+    anchor.dataset.xCountryFlagsHandle = key;
+    let anchors = anchorsByHandle.get(key);
+    if (!anchors) {
+      anchors = new Set();
+      anchorsByHandle.set(key, anchors);
+    }
+    anchors.add(anchor);
   }
 
   function readHandle(anchor) {
@@ -226,15 +276,6 @@
     } catch {
       return null;
     }
-  }
-
-  function trackAnchor(anchor, key) {
-    let anchors = anchorsByHandle.get(key);
-    if (!anchors) {
-      anchors = new Set();
-      anchorsByHandle.set(key, anchors);
-    }
-    anchors.add(anchor);
   }
 
   function hasConnectedAnchor(key) {
@@ -643,7 +684,7 @@
       return;
     }
     for (const anchor of [...anchors]) {
-      if (!anchor.isConnected) {
+      if (!anchor.isConnected || anchor.dataset.xCountryFlagsHandle !== key) {
         anchors.delete(anchor);
         continue;
       }
