@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         X Country Flags (Automatic Bootstrap)
 // @namespace    https://x.com/
-// @version      0.4.1
+// @version      0.4.2
 // @description  Fetches X account-country flags for posts and quotes in Firefox (Violentmonkey) and Chromium (Tampermonkey).
 // @updateURL     https://raw.githubusercontent.com/diffficult/x-user-info/main/x-country-flags-autoprime.user.js
 // @downloadURL   https://raw.githubusercontent.com/diffficult/x-user-info/main/x-country-flags-autoprime.user.js
@@ -667,7 +667,10 @@
       insertMarker(anchor, "?", explainFailure(entry.reason), "error");
       return;
     }
-    const flag = entry.countryCode ? countryCodeToEmoji(entry.countryCode) : null;
+    // Re-derive from the displayed country name: persisted country codes can be stale
+    // across script versions, but the flag must agree with its tooltip.
+    const countryCode = entry.countryName ? countryNameToCode(entry.countryName) : null;
+    const flag = countryCode ? countryCodeToEmoji(countryCode) : null;
     const text = flag || entry.countryName;
     if (!text) {
       markerFor(anchor)?.remove();
