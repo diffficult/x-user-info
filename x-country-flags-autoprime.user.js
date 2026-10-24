@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         X Country Flags (Automatic Bootstrap)
 // @namespace    https://x.com/
-// @version      0.4.0
+// @version      0.4.1
 // @description  Fetches X account-country flags for posts and quotes in Firefox (Violentmonkey) and Chromium (Tampermonkey).
 // @updateURL     https://forge.ikelos.xyz/5320/x-user-info/raw/branch/main/x-country-flags-autoprime.user.js
 // @downloadURL   https://forge.ikelos.xyz/5320/x-user-info/raw/branch/main/x-country-flags-autoprime.user.js
@@ -731,11 +731,27 @@
       : (fn) => exportFunction(fn, pageWindow);
 
     const originalFetch = pageWindow.fetch;
+    // Content-context injection must hand page fetch an init object built in the page
+    // realm. A content-realm init makes the native binding throw
+    // `Permission denied to access property "body"` before the request is sent.
+    const toPageRequestInit = inPageWorld
+      ? (init) => init
+      : (init) => {
+          const pageInit = new pageWindow.Object();
+          pageInit.method = init.method;
+          pageInit.credentials = init.credentials;
+          const headers = new pageWindow.Headers();
+          for (const [key, value] of Object.entries(init.headers || {})) {
+            headers.set(key, value);
+          }
+          pageInit.headers = headers;
+          return pageInit;
+        };
     if (typeof originalFetch === "function") {
       pageWindow.fetch = wrapForPage(function patchedFetch(input, init) {
         // Call the page fetch first. Capture must never throw or do DOM work on this stack,
         // or X's own About this account request fails with "Something went wrong".
-        const pending = originalFetch.apply(pageWindow, arguments);
+        const pending = originalFetch.call(pageWindow, input, init);
         try {
           const url = requestUrl(input);
           noteAboutQueryUrl(url);
@@ -761,7 +777,7 @@
         } catch {
           // Expando assignment can fail across compartments; the page request still proceeds.
         }
-        return originalOpen.apply(this, arguments);
+        return originalOpen.call(this, method, url);
       });
 
       proto.setRequestHeader = wrapForPage(function patchedSetRequestHeader(key, value) {
@@ -772,10 +788,10 @@
         } catch {
           // Ignore header bookkeeping failures.
         }
-        return originalSetRequestHeader.apply(this, arguments);
+        return originalSetRequestHeader.call(this, key, value);
       });
 
-      proto.send = wrapForPage(function patchedSend() {
+      proto.send = wrapForPage(function patchedSend(body) {
         try {
           const xhr = this;
           const url = xhr.__xCountryFlagsAutoprimeUrl;
@@ -794,7 +810,7 @@
         } catch (error) {
           console.warn("[X Country Flags] XHR hook failed:", error);
         }
-        return originalSend.apply(this, arguments);
+        return originalSend.call(this, body);
       });
     }
 
@@ -822,7 +838,7 @@
         url: url.toString(),
         headers,
         fetch(input, init) {
-          return originalFetch.call(pageWindow, input, init);
+          return originalFetch.call(pageWindow, input, toPageRequestInit(init));
         },
       };
       console.info(
