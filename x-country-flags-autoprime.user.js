@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         X Country Flags (Automatic Bootstrap)
 // @namespace    https://x.com/
-// @version      0.4.3
+// @version      0.4.4
 // @description  Fetches X account-country flags for posts and quotes in Firefox (Violentmonkey) and Chromium (Tampermonkey).
 // @updateURL     https://raw.githubusercontent.com/diffficult/x-user-info/main/x-country-flags-autoprime.user.js
 // @downloadURL   https://raw.githubusercontent.com/diffficult/x-user-info/main/x-country-flags-autoprime.user.js
@@ -10,6 +10,7 @@
 // @grant        GM_getValue
 // @grant        GM_setValue
 // @grant        GM_info
+// @grant        unsafeWindow
 // @inject-into  auto
 // @run-at       document-start
 // ==/UserScript==
@@ -27,8 +28,8 @@
   const UNAVAILABLE_BACKOFF_MS = 6 * 60 * 60 * 1000;
   const WRITE_DEBOUNCE_MS = 1000;
   const MARKER_ATTR = "data-x-country-flags-autoprime-marker";
-  const TIME_ANCHOR = 'a[href*="/status/"] time';
-  const GRAPHQL_PATH = /\/i\/api\/graphql\/[^/]+\/[^/]+/;
+  const TIME_ANCHOR = 'a[href*="/status/"]:has(time), a[href*="/status/"][data-base-ui-tooltip-trigger]';
+  const GRAPHQL_PATH = /^\/(?:i\/api\/)?graphql\/[^/]+\/[^/]+$/;
   const NON_USER = /^(i|intent|share|search|explore|home|settings|messages|compose|tos|privacy|notifications)$/i;
   const cache = new Map(Object.entries(readStoredCache()));
   const inflight = new Map();
@@ -109,8 +110,7 @@
           const anchor = mutation.target;
           if (
             anchor instanceof HTMLAnchorElement &&
-            anchor.matches('a[href*="/status/"]') &&
-            anchor.querySelector("time")
+            anchor.matches(TIME_ANCHOR)
           ) {
             scheduleScan(anchor);
           }
@@ -138,7 +138,7 @@
       childList: true,
       subtree: true,
       attributes: true,
-      attributeFilter: ["href"],
+      attributeFilter: ["href", "data-base-ui-tooltip-trigger"],
     });
   }
 
@@ -167,13 +167,10 @@
     if (!root?.querySelectorAll) {
       return;
     }
-    for (const time of root.querySelectorAll(TIME_ANCHOR)) {
-      const anchor = time.closest("a");
-      if (anchor) {
-        processAnchor(anchor);
-      }
+    for (const anchor of root.querySelectorAll(TIME_ANCHOR)) {
+      processAnchor(anchor);
     }
-    if (root.matches?.('a[href*="/status/"]') && root.querySelector("time")) {
+    if (root.matches?.(TIME_ANCHOR)) {
       processAnchor(root);
     }
   }
@@ -508,7 +505,7 @@
     let response;
     try {
       const url = new URL(requestTemplate.url);
-      url.pathname = `/i/api/graphql/${aboutQueryId}/AboutAccountQuery`;
+      url.pathname = url.pathname.replace(/\/[^/]+\/[^/]+$/, `/${aboutQueryId}/AboutAccountQuery`);
       url.search = "";
       url.searchParams.set("variables", JSON.stringify({ screenName }));
       if (aboutFeatures?.features) {
@@ -741,7 +738,7 @@
     marker.textContent = ` \u00b7 ${text}`;
     marker.title = title;
     marker.setAttribute("aria-label", title);
-    const time = anchor.querySelector("time");
+    const time = anchor.querySelector("time") || anchor;
     let color = "inherit";
     let fontSize = "";
     let fontFamily = "";
@@ -1010,7 +1007,10 @@
 
   function getPageWindow() {
     // Firefox content context exposes the page world through wrappedJSObject.
-    // In page-context injection (Violentmonkey auto/page, Tampermonkey) window is already the page.
+    // Tampermonkey exposes it through unsafeWindow, even when window is sandboxed.
+    if (typeof unsafeWindow !== "undefined" && unsafeWindow) {
+      return unsafeWindow.wrappedJSObject || unsafeWindow;
+    }
     return window.wrappedJSObject || window;
   }
 
@@ -1023,11 +1023,14 @@
 
   function logContext() {
     const injectInto = getInjectContext();
-    const bridged = window.wrappedJSObject != null || typeof exportFunction === "function";
+    const pageWindow = getPageWindow();
+    const pageAccess = typeof unsafeWindow !== "undefined" && unsafeWindow
+      ? "unsafeWindow"
+      : window.wrappedJSObject != null ? "wrappedJSObject" : "window";
     console.info(
-      `[X Country Flags] injectInto=${injectInto} pageWorld=${window.wrappedJSObject == null} wrappedJSObject=${window.wrappedJSObject != null} exportFunction=${typeof exportFunction === "function"}`,
+      `[X Country Flags] injectInto=${injectInto} pageAccess=${pageAccess} windowIsPage=${pageWindow === window} exportFunction=${typeof exportFunction === "function"}`,
     );
-    if (injectInto === "content" && !bridged) {
+    if (injectInto === "content" && pageAccess === "window") {
       console.warn(
         "[X Country Flags] Page-context fetch interception is unavailable here; flags will not resolve.",
       );

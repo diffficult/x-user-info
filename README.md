@@ -16,9 +16,9 @@ The userscript embeds a compact PNG icon directly in its metadata, so no externa
 
 ## How it works
 
-- Watches every post-age link (`a[href*="/status/"] time`) under timeline tweets, including quoted posts. Rechecks links when X changes a reused timeline anchor's `href`, so a country flag cannot remain attached to a different account. A quote whose time links to `/i/status/:id` takes the handle from the adjacent display name.
-- Captures X's internal GraphQL request template — including its authorization headers — from normal timeline traffic, so no profile visit or manual priming is needed. It patches the page's own `fetch`/`XMLHttpRequest` without blocking those calls. `@inject-into auto` runs it in the page context when the site's CSP allows it (Chromium, Tampermonkey) and falls back to the content context on Firefox, where it reaches the page world through `wrappedJSObject`.
-- Reuses that template to invoke `AboutAccountQuery` and reads `about_profile.account_based_in`. If X itself loads About this account, the script reuses that response and adopts the live query ID and feature flags.
+- Watches post-age links under timeline tweets, including quoted posts, supporting both legacy `<time>` elements and the redesigned tooltip-based timestamp links. Rechecks links when X changes a reused timeline anchor's `href`, so a country flag cannot remain attached to a different account. A quote whose time links to `/i/status/:id` takes the handle from the adjacent display name.
+- Captures X's internal GraphQL request template — including its authorization headers — from normal timeline traffic, so no profile visit or manual priming is needed. It patches the page's own `fetch`/`XMLHttpRequest` without blocking those calls. It explicitly reaches the page through Tampermonkey's `unsafeWindow` or Firefox's `wrappedJSObject`, rather than assuming the userscript's `window` is the page.
+- Reuses that template to invoke `AboutAccountQuery` and reads `about_profile.account_based_in`, preserving the captured `/graphql/` or `/i/api/graphql/` route. If X itself loads About this account, the script reuses that response and adopts the live query ID and feature flags.
 - Renders a flag only when `created_country_accurate` is `true`. The marker inherits the timestamp color, does not shrink in the quote header, and its tooltip says `Account based in Argentina`.
 - A failed lookup shows `?` after the age. Hover it for the reason. A GraphQL dependency failure uses the same wording X hides behind "Something went wrong" on the profile.
 - Visible posts are looked up first, two at a time, 400ms apart. One account's error does not pause the others. Rate limits, auth failures, and a stale query ID still pause every lookup for 30 minutes.
@@ -34,7 +34,15 @@ The userscript embeds a compact PNG icon directly in its metadata, so no externa
 
 Flags begin resolving as soon as the script captures the first authenticated timeline request.
 
-If flags do not appear, open the developer console on `x.com`: the script logs its effective context (`injectInto=...`). In Firefox it should report `content`; if you instead see the warning `Page-context fetch interception is unavailable`, the script could not reach the page's network layer in that browser.
+If flags do not appear, open the developer console on `x.com`: the script logs its injection context (`injectInto=...`) and page-access mechanism (`pageAccess=...`). Tampermonkey should report `pageAccess=unsafeWindow`. Successful interception logs `Captured timeline GraphQL request`. If you see the warning `Page-context fetch interception is unavailable`, the script could not reach the page's network layer in that browser.
+
+## Tests
+
+Run the dependency-free regression tests with Node.js:
+
+```sh
+node --test tests/userscript.test.cjs
+```
 
 ## Privacy And Session Disclaimer
 
