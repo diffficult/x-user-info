@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         X Country Flags (Automatic Bootstrap)
 // @namespace    https://x.com/
-// @version      0.4.4
+// @version      0.4.5
 // @description  Fetches X account-country flags for posts and quotes in Firefox (Violentmonkey) and Chromium (Tampermonkey).
 // @updateURL     https://raw.githubusercontent.com/diffficult/x-user-info/main/x-country-flags-autoprime.user.js
 // @downloadURL   https://raw.githubusercontent.com/diffficult/x-user-info/main/x-country-flags-autoprime.user.js
@@ -707,9 +707,7 @@
     }
     // Re-derive from the displayed country name: persisted country codes can be stale
     // across script versions, but the flag must agree with its tooltip.
-    const countryCode = entry.countryName ? countryNameToCode(entry.countryName) : null;
-    const flag = countryCode ? countryCodeToEmoji(countryCode) : null;
-    const text = flag || entry.countryName;
+    const text = entry.countryName ? markerTextFor(entry.countryName) : null;
     if (!text) {
       markerFor(anchor)?.remove();
       return;
@@ -1037,6 +1035,19 @@
     }
   }
 
+  function markerTextFor(countryName) {
+    return regionFlagStrip(countryName) || countryCodeToEmoji(countryNameToCode(countryName)) || countryName || null;
+  }
+
+  function regionFlagStrip(name) {
+    const codes = REGION_FLAGS[normalizeName(name)];
+    if (!codes) {
+      return null;
+    }
+    const flags = codes.map(countryCodeToEmoji).filter(Boolean);
+    return flags.length ? flags.join("") : null;
+  }
+
   function countryNameToCode(name) {
     return COUNTRY_CODES[normalizeName(name)] ?? null;
   }
@@ -1062,6 +1073,19 @@
     }
     return String.fromCodePoint(...code.toUpperCase().split("").map((char) => 127397 + char.charCodeAt(0)));
   }
+
+  // Keys are normalizeName() output. A strip is a hint, not a resolved country.
+  const REGION_FLAGS = {
+    africa: ["NG", "EG", "ZA", "KE", "GH"],
+    asia: ["JP", "IN", "ID", "TR", "SA"],
+    caribbean: ["PR", "DO", "JM", "TT", "CU"],
+    "central asia": ["KZ", "KG", "TJ", "TM", "UZ"],
+    "east asia": ["CN", "KR", "TW", "HK", "JP"],
+    "eastern europe non eu": ["BY", "MD", "RU", "UA"],
+    oceania: ["AU", "NZ", "PG", "FJ", "WS"],
+    "south asia": ["IN", "PK", "BD", "AF", "IR"],
+    "southeast asia": ["ID", "TH", "PH", "VN", "MY"],
+  };
 
   const COUNTRY_CODES = Object.fromEntries(`
 AF|Afghanistan

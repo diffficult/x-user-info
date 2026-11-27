@@ -8,7 +8,7 @@ Example output:
 
 The flag tooltip uses the country name reported by X, for example `Argentina`.
 
-Regional labels use `🇪🇺` for Europe and `🌎` for North America or South America; Unicode has no separate flags for those two Americas.
+Europe stays `🇪🇺`. North America and South America stay `🌎`. Other region labels X returns, such as Southeast Asia or South Asia, show five likely flags from that region. The tooltip stays the label X reported.
 
 ## Icon
 

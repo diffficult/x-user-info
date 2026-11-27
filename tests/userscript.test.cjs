@@ -61,7 +61,7 @@ function load({ bridge = "unsafeWindow" } = {}) {
   vm.createContext(context);
   vm.runInContext(source.replace(/\}\)\(\);\s*$/, `
     globalThis.testApi = {
-      getPageWindow, requestCountry, observeTimeline, renderAnchor,
+      getPageWindow, requestCountry, observeTimeline, renderAnchor, markerTextFor,
       selector: TIME_ANCHOR,
       processRoot,
       processAnchor: (callback) => { processAnchor = callback; },
@@ -124,6 +124,26 @@ test("rechecks redesigned timestamps when X reuses links or adds the tooltip att
   loaded.observer.callback([{ type: "attributes", target: anchor }]);
   loaded.scans.shift()();
   assert.deepEqual(processed, [anchor]);
+});
+
+test("coarse region labels show a flag strip, leaving Europe and the Americas alone", () => {
+  const { api } = load();
+  const flags = (codes) => codes.map((code) => String.fromCodePoint(
+    ...code.split("").map((char) => 127397 + char.charCodeAt(0)),
+  )).join("");
+  assert.equal(api.markerTextFor("Southeast Asia"), flags(["ID", "TH", "PH", "VN", "MY"]));
+  assert.equal(api.markerTextFor("South Asia"), flags(["IN", "PK", "BD", "AF", "IR"]));
+  assert.equal(api.markerTextFor("East Asia"), flags(["CN", "KR", "TW", "HK", "JP"]));
+  assert.equal(api.markerTextFor("Central Asia"), flags(["KZ", "KG", "TJ", "TM", "UZ"]));
+  assert.equal(api.markerTextFor("Caribbean"), flags(["PR", "DO", "JM", "TT", "CU"]));
+  assert.equal(api.markerTextFor("Eastern Europe (Non-EU)"), flags(["BY", "MD", "RU", "UA"]));
+  assert.equal(api.markerTextFor("Asia"), flags(["JP", "IN", "ID", "TR", "SA"]));
+  assert.equal(api.markerTextFor("Africa"), flags(["NG", "EG", "ZA", "KE", "GH"]));
+  assert.equal(api.markerTextFor("Oceania"), flags(["AU", "NZ", "PG", "FJ", "WS"]));
+  assert.equal(api.markerTextFor("Europe"), "🇪🇺");
+  assert.equal(api.markerTextFor("North America"), "🌎");
+  assert.equal(api.markerTextFor("South America"), "🌎");
+  assert.equal(api.markerTextFor("Argentina"), "🇦🇷");
 });
 
 test("a DOM-only context no longer falsely claims to be the page world", () => {
